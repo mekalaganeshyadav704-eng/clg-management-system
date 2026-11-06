@@ -174,8 +174,7 @@ def init_database(reset=False):
         ('Monday', '10:00 - 11:00 AM', 'CS502: Algorithms', 'Prof. Priya Iyer', 'LH-302', 'Lecture'),
         ('Monday', '11:15 - 01:15 PM', 'CS503: Web Tech Lab', 'Dr. Rajesh Sharma', 'Computing Lab 4', 'Practical'),
         ('Monday', '02:00 - 03:00 PM', 'CS504: Operating Systems', 'Prof. Vikram', 'LH-302', 'Lecture'),
-        ('Monday', '03:00 - 04:00 PM', 'Library / Sports', 'Staff in cha
-        rge', 'Central Library', 'Activity'),
+        ('Monday', '03:00 - 04:00 PM', 'Library / Sports', 'Staff in charge', 'Central Library', 'Activity'),
         ('Tuesday', '09:00 - 10:00 AM', 'MA501: Discrete Math', 'Dr. Ananth', 'LH-302', 'Lecture'),
         ('Tuesday', '10:00 - 11:00 AM', 'CS501: DBMS', 'Dr. Rajesh Sharma', 'LH-302', 'Lecture'),
         ('Tuesday', '11:15 - 12:15 PM', 'CS504: Operating Systems', 'Prof. Vikram', 'LH-302', 'Lecture'),
