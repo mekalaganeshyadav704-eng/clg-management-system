@@ -9,10 +9,20 @@ import sqlite3
 DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'college_erp.db')
 SCHEMA_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'schema.sql')
 
-def init_database():
+def init_database(reset=False):
     print(f"[*] Initializing Database at: {DB_PATH}")
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
+
+    if reset:
+        # Drop every user table so the seed step below runs again
+        cursor.execute("PRAGMA foreign_keys = OFF;")
+        tables = cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
+        ).fetchall()
+        for (t,) in tables:
+            cursor.execute(f'DROP TABLE IF EXISTS "{t}"')
+        conn.commit()
 
     # Enable foreign key constraints in SQLite
     cursor.execute("PRAGMA foreign_keys = ON;")
@@ -164,7 +174,8 @@ def init_database():
         ('Monday', '10:00 - 11:00 AM', 'CS502: Algorithms', 'Prof. Priya Iyer', 'LH-302', 'Lecture'),
         ('Monday', '11:15 - 01:15 PM', 'CS503: Web Tech Lab', 'Dr. Rajesh Sharma', 'Computing Lab 4', 'Practical'),
         ('Monday', '02:00 - 03:00 PM', 'CS504: Operating Systems', 'Prof. Vikram', 'LH-302', 'Lecture'),
-        ('Monday', '03:00 - 04:00 PM', 'Library / Sports', 'Staff in charge', 'Central Library', 'Activity'),
+        ('Monday', '03:00 - 04:00 PM', 'Library / Sports', 'Staff in cha
+        rge', 'Central Library', 'Activity'),
         ('Tuesday', '09:00 - 10:00 AM', 'MA501: Discrete Math', 'Dr. Ananth', 'LH-302', 'Lecture'),
         ('Tuesday', '10:00 - 11:00 AM', 'CS501: DBMS', 'Dr. Rajesh Sharma', 'LH-302', 'Lecture'),
         ('Tuesday', '11:15 - 12:15 PM', 'CS504: Operating Systems', 'Prof. Vikram', 'LH-302', 'Lecture'),
