@@ -12,7 +12,7 @@ let state = {
   selectedStudent: null,
   selectedInvoice: null,
   isBackendLive: false,
-  apiBaseUrl: window.location.origin.includes(':8000') ? '' : 'http://127.0.0.1:8000'
+  apiBaseUrl: window.location.protocol.startsWith('http') ? '' : 'http://127.0.0.1:8000'
 };
 
 // Initialize Application

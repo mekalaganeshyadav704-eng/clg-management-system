@@ -10,7 +10,7 @@ import mimetypes
 from urllib.parse import urlparse, parse_qs
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 
-PORT = 8000
+PORT = int(os.environ.get('PORT', 8000))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, 'college_erp.db')
 
@@ -455,6 +455,11 @@ class AcademiaERPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(str(e).encode('utf-8'))
 
 def run_server():
+if not os.path.exists(DB_PATH):
+    print('[*] Database not found on startup. Initializing database...')
+    from init_db import init_database
+    init_database()
+
     server_address = ('0.0.0.0', PORT)
     httpd = ThreadingHTTPServer(server_address, AcademiaERPRequestHandler)
     print("=" * 72)

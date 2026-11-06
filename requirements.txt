@@ -1,0 +1,2 @@
+# AcademiaPro ERP - Python Standard Library Architecture
+# Uses built-in http.server and sqlite3
