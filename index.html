@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcademiaPro - Modern College ERP & Campus Management System</title>
+
+  <!-- Preconnect CDN links for ultra-fast asset loading -->
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Canvas Confetti CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="glass-header sticky top-0 z-30 px-6 py-3.5 flex items-center justify-between">
+    <!-- Brand / College Header -->
+    <div class="flex items-center gap-3.5">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+        <i class="fa-solid fa-graduation-cap text-lg"></i>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="font-extrabold text-base tracking-tight text-slate-900">APEX INSTITUTE OF TECHNOLOGY</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">Autonomous</span>
+        </div>
+        <p class="text-xs text-slate-500 font-medium">Campus ERP System • Academic Year 2026-27</p>
+      </div>
+    </div>
+
+    <!-- Live Status, Clock & Quick Controls -->
+    <div class="flex items-center gap-4">
+      <!-- Live SQL Database Status Badge -->
+      <div id="dbStatusBadge" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200">
+        <span id="dbStatusDot" class="w-2 h-2 rounded-full bg-slate-400"></span>
+        <span id="dbStatusText">Checking SQL DB...</span>
+      </div>
+
+      <!-- Live Time -->
+      <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100/80 text-xs font-semibold text-slate-600 border border-slate-200/60">
+        <i class="fa-regular fa-clock text-blue-600"></i>
+        <span id="liveClock">Loading time...</span>
+      </div>
+
+      <!-- ROLE SWITCHER (The key highlight for lab exam demo) -->
+      <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+        <span class="text-xs font-bold text-slate-500 pl-2 hidden sm:inline"><i class="fa-solid fa-user-gear mr-1"></i> Role:</span>
+        <select id="roleSwitcherSelect" class="bg-white text-xs font-bold text-slate-800 px-3 py-1.5 rounded-lg border-0 shadow-sm focus:ring-2 focus:ring-blue-500 cursor-pointer">
+          <option value="admin">🛡️ Administrator</option>
+          <option value="faculty">👨‍🏫 Faculty (Prof. Rajesh)</option>
+          <option value="student">🎓 Student (Aarav - 22CS101)</option>
+        </select>
+      </div>
+
+      <!-- User Profile Pill -->
+      <div class="flex items-center gap-3 pl-2 border-l border-slate-200">
+        <img id="currentUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Avatar" class="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-sm">
+        <div class="hidden lg:block text-left">
+          <div id="currentUserName" class="text-xs font-bold text-slate-900 leading-tight">Dr. Arvind Swaminathan</div>
+          <div id="currentUserRole" class="text-[11px] text-slate-500">Dean of Academics & Admin</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN LAYOUT WRAPPER ================= -->
+  <div class="flex-1 flex overflow-hidden">
+
+    <!-- ================= SIDEBAR ================= -->
+    <aside class="w-64 bg-white border-r border-slate-200/90 flex flex-col justify-between shrink-0 select-none overflow-y-auto">
+      <div class="p-4 space-y-6">
+
+        <!-- Role Badge Display -->
+        <div id="role-badge-bar" class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Current Space</span>
+          <span id="activeRoleBadge" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+            <i class="fa-solid fa-shield-halved mr-1"></i> Admin Portal
+          </span>
+        </div>
+
+        <!-- Navigation Group: Main -->
+        <div class="space-y-1">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">Main Navigation</div>
+
+          <a href="#" data-tab-target="dashboard" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition active">
+            <i class="fa-solid fa-chart-pie w-4 text-center text-slate-500"></i>
+            <span>Dashboard Overview</span>
+          </a>
+
+          <a href="#" data-tab-target="timetable" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-calendar-days w-4 text-center text-slate-500"></i>
+            <span>Weekly Timetable</span>
+          </a>
+
+          <a href="#" data-tab-target="notices" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-bullhorn w-4 text-center text-slate-500"></i>
+            <span>Campus Circulars</span>
+          </a>
+        </div>
+
+        <!-- Navigation Group: Academic (Admin / Faculty) -->
+        <div class="space-y-1 nav-admin-only">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">Academic Modules</div>
+
+          <a href="#" data-tab-target="students" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-user-graduate w-4 text-center text-slate-500"></i>
+            <span>Students Directory</span>
+          </a>
+
+          <a href="#" data-tab-target="faculty" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-chalkboard-user w-4 text-center text-slate-500"></i>
+            <span>Faculty Roster</span>
+          </a>
+
+          <a href="#" data-tab-target="courses" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-book-bookmark w-4 text-center text-slate-500"></i>
+            <span>Courses & Curriculum</span>
+          </a>
+
+          <a href="#" data-tab-target="fees" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-file-invoice-dollar w-4 text-center text-slate-500"></i>
+            <span>Fee & Finance Admin</span>
+          </a>
+        </div>
+
+        <!-- Navigation Group: Faculty Specific Tools -->
+        <div class="space-y-1 nav-faculty-only">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">Faculty Operations</div>
+
+          <a href="#" data-tab-target="attendance" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-clipboard-check w-4 text-center text-slate-500"></i>
+            <span>Daily Attendance Marker</span>
+          </a>
+
+          <a href="#" data-tab-target="marks" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-square-poll-vertical w-4 text-center text-slate-500"></i>
+            <span>Internal Marks & Grading</span>
+          </a>
+        </div>
+
+        <!-- Navigation Group: Student Self Service -->
+        <div class="space-y-1 nav-student-only" style="display: none;">
+          <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3 mb-2">My Academic Life</div>
+
+          <a href="#" data-tab-target="student-overview" class="nav-item flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-700 hover:bg-slate-100 transition">
+            <i class="fa-solid fa-user-circle w-4 text-center text-slate-500"></i>
+            <span>My Profile & Summary</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer Tools -->
+      <div class="p-4 border-t border-slate-100 space-y-2 bg-slate-50/50">
+        <button onclick="exportStudentsToCSV()" class="w-full py-2 px-3 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition flex items-center justify-center gap-2 shadow-sm">
+          <i class="fa-solid fa-file-excel text-emerald-600"></i>
+          <span>Export Students (CSV)</span>
+        </button>
+
+        <button onclick="resetSystemData()" class="w-full py-1.5 px-3 rounded-xl text-slate-500 hover:text-rose-600 hover:bg-rose-50 text-[11px] font-semibold transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-arrow-rotate-left"></i>
+          <span>Reset Demo Data</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ================= CONTENT AREA ================= -->
+    <main class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50">
+
+      <!-- ================= 1. TAB: DASHBOARD ================= -->
+      <section id="pane-dashboard" class="tab-pane space-y-6">
+        <!-- Welcome Hero Banner -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-800 text-white p-6 md:p-8 shadow-xl shadow-blue-900/10">
+          <div class="relative z-10 max-w-2xl">
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md text-white mb-3">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i> System Operational • All Modules Active
+            </span>
+            <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight">Apex Campus Management ERP</h1>
+            <p class="text-blue-100 text-sm mt-2 leading-relaxed">
+              Comprehensive autonomous institution ERP system for attendance tracking, student information, faculty assignments, examination grading, and automated fee administration.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2.5">
+              <button onclick="openModal('addStudentModal')" class="px-4 py-2 rounded-xl bg-white text-blue-700 text-xs font-bold hover:bg-blue-50 transition shadow-sm inline-flex items-center gap-2">
+                <i class="fa-solid fa-user-plus"></i> Enroll Student
+              </button>
+              <button onclick="openModal('addNoticeModal')" class="px-4 py-2 rounded-xl bg-blue-500/30 hover:bg-blue-500/40 text-white border border-white/20 text-xs font-bold transition inline-flex items-center gap-2">
+                <i class="fa-solid fa-bullhorn"></i> Post Notice
+              </button>
+            </div>
+          </div>
+          <!-- Background decoration -->
+          <div class="absolute -right-8 -bottom-12 text-white/10 text-9xl pointer-events-none">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+        </div>
+
+        <!-- 4 Key Stat Metric Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover-lift">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Enrolled</span>
+              <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <i class="fa-solid fa-user-graduate text-base"></i>
+              </div>
+            </div>
+            <div id="dashTotalStudents" class="text-2xl font-extrabold text-slate-900 mt-2">1,420</div>
+            <div class="text-xs text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+              <i class="fa-solid fa-arrow-trend-up"></i> +8.2% from last academic year
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover-lift">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Faculty Members</span>
+              <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                <i class="fa-solid fa-chalkboard-user text-base"></i>
+              </div>
+            </div>
+            <div id="dashTotalFaculty" class="text-2xl font-extrabold text-slate-900 mt-2">90</div>
+            <div class="text-xs text-slate-500 font-medium mt-1">
+              Student-Faculty Ratio: <strong>15:1</strong>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover-lift">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Active Courses</span>
+              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i class="fa-solid fa-book text-base"></i>
+              </div>
+            </div>
+            <div id="dashTotalCourses" class="text-2xl font-extrabold text-slate-900 mt-2">48</div>
+            <div class="text-xs text-slate-500 font-medium mt-1">Across 5 Engineering Branches</div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-sm hover-lift">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Campus Attendance</span>
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <i class="fa-solid fa-clipboard-user text-base"></i>
+              </div>
+            </div>
+            <div id="dashAvgAttendance" class="text-2xl font-extrabold text-emerald-600 mt-2">87.4%</div>
+            <div class="text-xs text-emerald-700 font-medium mt-1">Exceeds 75% NAAC benchmark</div>
+          </div>
+        </div>
+
+        <!-- Analytics Charts Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Department Attendance Bar Chart -->
+          <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Average Attendance by Department</h3>
+                <p class="text-xs text-slate-400">Current Semester comparative performance across branches</p>
+              </div>
+              <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg">Fall 2026</span>
+            </div>
+            <div class="h-64">
+              <canvas id="attendanceDeptChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Fee Collection Doughnut Chart -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Semester Fee Status</h3>
+                <p class="text-xs text-slate-400">Revenue collection ratio</p>
+              </div>
+              <span class="text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg">₹1.42 Cr Paid</span>
+            </div>
+            <div class="h-64">
+              <canvas id="feeCollectionChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grade Distribution Curve & Recent Notices -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Bell Curve Chart -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Academic Grade Bell Curve</h3>
+                <p class="text-xs text-slate-400">Student grade band distribution across internal evaluations</p>
+              </div>
+              <span class="text-xs font-bold text-purple-600 bg-purple-50 px-2.5 py-1 rounded-lg">CAT-1 Results</span>
+            </div>
+            <div class="h-60">
+              <canvas id="gradeDistributionChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Live Campus Circulars on Dashboard -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="font-bold text-slate-900 text-base">Recent Campus Notices</h3>
+                <p class="text-xs text-slate-400">Official circulars & announcements</p>
+              </div>
+              <a href="#" data-tab-target="notices" class="text-xs font-bold text-blue-600 hover:text-blue-700">View All →</a>
+            </div>
+            <div id="dashNoticesList" class="space-y-3">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. TAB: STUDENTS DIRECTORY ================= -->
+      <section id="pane-students" class="tab-pane hidden space-y-6">
+        <!-- Header & Action Row -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900">Students Directory</h2>
+            <p class="text-xs text-slate-500">Manage enrolled student profiles, academic status, and records</p>
+          </div>
+          <div class="flex items-center gap-2.5">
+            <button onclick="exportStudentsToCSV()" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition inline-flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-download text-emerald-600"></i> Export CSV
+            </button>
+            <button onclick="openModal('addStudentModal')" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition inline-flex items-center gap-2 shadow-sm shadow-blue-500/20">
+              <i class="fa-solid fa-plus"></i> Add New Student
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="relative w-full md:w-80">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+            <input type="text" id="studentSearchInput" placeholder="Search by name, roll no, or email..." class="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+          </div>
+
+          <div class="flex items-center gap-3 w-full md:w-auto">
+            <span class="text-xs text-slate-400 font-bold whitespace-nowrap">Department:</span>
+            <select id="studentDeptFilter" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 focus:outline-none focus:border-blue-500 cursor-pointer">
+              <option value="ALL">All Departments</option>
+              <option value="CSE">Computer Science (CSE)</option>
+              <option value="AI&DS">AI & Data Science (AI&DS)</option>
+              <option value="IT">Information Tech (IT)</option>
+              <option value="ECE">Electronics (ECE)</option>
+              <option value="MECH">Mechanical (MECH)</option>
+            </select>
+            <span id="studentsFilteredCount" class="text-xs font-bold px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg whitespace-nowrap">0 Students</span>
+          </div>
+        </div>
+
+        <!-- Students Table -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left custom-table">
+              <thead>
+                <tr>
+                  <th>Roll No</th>
+                  <th>Student Name</th>
+                  <th>Department</th>
+                  <th>Year / Sem</th>
+                  <th>CGPA</th>
+                  <th>Attendance</th>
+                  <th>Fee Status</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentsTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 3. TAB: FACULTY ROSTER ================= -->
+      <section id="pane-faculty" class="tab-pane hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900">Faculty Members Roster</h2>
+            <p class="text-xs text-slate-500">Professors, Associate Professors, and Academic Staff Directory</p>
+          </div>
+          <button onclick="showToast('Faculty registration form available in Admin expansion module', 'info')" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition inline-flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-plus"></i> Add Faculty
+          </button>
+        </div>
+
+        <div id="facultyGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- ================= 4. TAB: ATTENDANCE SYSTEM ================= -->
+      <section id="pane-attendance" class="tab-pane hidden space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-xl font-extrabold text-slate-900">Daily Attendance Marker</h2>
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-800">Faculty Portal</span>
+            </div>
+            <p class="text-xs text-slate-500">Subject: CS501 - Database Management Systems • Section CSE-A</p>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span id="attPresentBadge" class="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+              0 / 0 Present
+            </span>
+            <span id="attPctBadge" class="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold">
+              0% Today
+            </span>
+          </div>
+        </div>
+
+        <!-- Quick Action Toolbar -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="text-xs font-bold text-slate-600">Lecture Session:</div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800">Period 1 (09:00 - 10:00 AM)</span>
+            <span class="text-xs text-slate-400">|</span>
+            <span class="text-xs text-slate-500 font-medium">Room: <strong>LH-302</strong></span>
+          </div>
+
+          <div class="flex items-center gap-2.5">
+            <button onclick="markAllPresent()" class="px-3.5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition inline-flex items-center gap-1.5">
+              <i class="fa-solid fa-check-double"></i> Mark All Present
+            </button>
+            <button onclick="submitAttendance()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition inline-flex items-center gap-2 shadow-sm shadow-blue-500/20">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Submit & Finalize Attendance
+            </button>
+          </div>
+        </div>
+
+        <!-- Attendance Roster Table -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left custom-table">
+              <thead>
+                <tr>
+                  <th>Roll Number</th>
+                  <th>Student Name</th>
+                  <th>Attendance Status</th>
+                  <th>Session Remarks</th>
+                </tr>
+              </thead>
+              <tbody id="attendanceRosterBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 5. TAB: EXAMINATION & MARKS ================= -->
+      <section id="pane-marks" class="tab-pane hidden space-y-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900">Continuous Assessment & Grading</h2>
+            <p class="text-xs text-slate-500">Enter marks for CAT-1, CAT-2, Lab Experiments and Assignments</p>
+          </div>
+          <button onclick="showToast('Grade calculations verified and synced with Autonomous Examination Cell!', 'success')" class="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition inline-flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-award"></i> Publish Internal Marks
+          </button>
+        </div>
+
+        <!-- Marks Sheet Table -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700">Course: CS501 Database Management Systems (Max: 100)</span>
+            <span class="text-xs text-slate-400">Grading System: 10-Point Relative CGPA</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left custom-table">
+              <thead>
+                <tr>
+                  <th>Roll No</th>
+                  <th>Student Name</th>
+                  <th>CAT 1 (20)</th>
+                  <th>CAT 2 (20)</th>
+                  <th>Lab / Practical (30)</th>
+                  <th>Assignment (10)</th>
+                  <th>Total Score</th>
+                  <th>Letter Grade</th>
+                </tr>
+              </thead>
+              <tbody id="marksTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 6. TAB: COURSES & CURRICULUM ================= -->
+      <section id="pane-courses" class="tab-pane hidden space-y-6">
+        <div>
+          <h2 class="text-xl font-extrabold text-slate-900">Departments & Academic Curriculum</h2>
+          <p class="text-xs text-slate-500">Autonomous course syllabus and department structures</p>
+        </div>
+
+        <!-- Departments Grid -->
+        <div class="space-y-3">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Engineering Departments</h3>
+          <div id="departmentsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Courses Table -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100">
+            <h3 class="font-bold text-sm text-slate-900">Current Semester Course Catalog</h3>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left custom-table">
+              <thead>
+                <tr>
+                  <th>Course Code</th>
+                  <th>Course Name</th>
+                  <th>Dept</th>
+                  <th>Semester</th>
+                  <th>Credits</th>
+                  <th>Faculty Incharge</th>
+                  <th>Course Type</th>
+                </tr>
+              </thead>
+              <tbody id="coursesTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 7. TAB: FEES & FINANCE ================= -->
+      <section id="pane-fees" class="tab-pane hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900">Fee Administration & Invoicing</h2>
+            <p class="text-xs text-slate-500">Track semester tuition fees, payments, and print official receipts</p>
+          </div>
+          <span class="text-xs font-bold px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <i class="fa-solid fa-receipt mr-1"></i> Automated Invoice Engine
+          </span>
+        </div>
+
+        <!-- Fees Table -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left custom-table">
+              <thead>
+                <tr>
+                  <th>Invoice ID</th>
+                  <th>Student Details</th>
+                  <th>Total Billed</th>
+                  <th>Paid Amount</th>
+                  <th>Pending Dues</th>
+                  <th>Status</th>
+                  <th>Last Payment</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="feesInvoicesBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 8. TAB: NOTICE BOARD ================= -->
+      <section id="pane-notices" class="tab-pane hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900">Campus Circulars & Notice Board</h2>
+            <p class="text-xs text-slate-500">Official broadcasts, examination schedules, and campus events</p>
+          </div>
+          <button onclick="openModal('addNoticeModal')" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition inline-flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-plus"></i> Post New Notice
+          </button>
+        </div>
+
+        <div id="allNoticesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- ================= 9. TAB: WEEKLY TIMETABLE ================= -->
+      <section id="pane-timetable" class="tab-pane hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-extrabold text-slate-900">Class Schedule & Timetable</h2>
+            <p class="text-xs text-slate-500">Department of Computer Science & Engineering • 3rd Year (Semester 5)</p>
+          </div>
+          <button onclick="window.print()" class="px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 transition inline-flex items-center gap-2 shadow-sm">
+            <i class="fa-solid fa-print"></i> Print Schedule
+          </button>
+        </div>
+
+        <div id="timetableGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <!-- Rendered dynamically -->
+        </div>
+      </section>
+
+      <!-- ================= 10. TAB: STUDENT SELF SERVICE ================= -->
+      <section id="pane-student-overview" class="tab-pane hidden space-y-6">
+        <!-- Student Profile Card Banner -->
+        <div class="bg-white rounded-3xl border border-slate-200/90 p-6 md:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+          <div class="flex items-center gap-5">
+            <img id="stuAvatarImg" src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80" alt="Student Avatar" class="w-20 h-20 rounded-2xl object-cover border-4 border-blue-50 shadow-md">
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="stuRoll" class="font-mono text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-0.5 rounded">22CS101</span>
+                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Regular Student</span>
+              </div>
+              <h2 id="stuName" class="text-2xl font-black text-slate-900 mt-1">Aarav Sharma</h2>
+              <p id="stuDept" class="text-xs text-slate-500 font-medium">Computer Science & Engineering • 3rd Year (5th Sem)</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <div class="text-right pr-4 border-r border-slate-100">
+              <span class="text-xs text-slate-400 block font-bold">CUMULATIVE GPA</span>
+              <span id="stuCgpa" class="text-2xl font-black text-emerald-600">8.92</span>
+            </div>
+            <button onclick="openDigitalIdCardModal('STU-1001')" class="px-4 py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition inline-flex items-center gap-2 shadow-sm">
+              <i class="fa-solid fa-id-card"></i> View Digital ID Card
+            </button>
+            <button onclick="openPaymentSimulatorModal()" class="px-4 py-2.5 rounded-2xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition inline-flex items-center gap-2 shadow-sm shadow-blue-500/20">
+              <i class="fa-solid fa-credit-card"></i> Pay Fees
+            </button>
+          </div>
+        </div>
+
+        <!-- Subject Attendance Health Monitor -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base">Subject Attendance Health Tracker</h3>
+              <p class="text-xs text-slate-400">Minimum 75% required to qualify for Autonomous Semester Examination</p>
+            </div>
+            <span class="text-xs font-bold text-slate-500">Live Sync</span>
+          </div>
+
+          <div id="studentAttSummaryList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Semester Grade Sheet -->
+        <div class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-slate-900 text-base">Semester Grade Card & Evaluation</h3>
+              <p class="text-xs text-slate-400">Verified Internal & Practical Marks</p>
+            </div>
+            <button onclick="showToast('Official Grade Sheet PDF generated!', 'success')" class="px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition inline-flex items-center gap-1.5">
+              <i class="fa-solid fa-file-arrow-down"></i> Download Grade Slip
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left custom-table">
+              <thead>
+                <tr>
+                  <th>Subject Code</th>
+                  <th>Subject Name</th>
+                  <th class="text-center">Credits</th>
+                  <th class="text-center">CAT 1 (20)</th>
+                  <th class="text-center">CAT 2 (20)</th>
+                  <th class="text-center">Lab (30)</th>
+                  <th class="text-center">Assignment (10)</th>
+                  <th class="text-center">Total (100)</th>
+                  <th class="text-center">Grade</th>
+                </tr>
+              </thead>
+              <tbody id="studentMarksList">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. ADD STUDENT MODAL -->
+  <div id="addStudentModal" class="modal fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl modal-content max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Enroll New Student</h3>
+          <p class="text-xs text-slate-400">Add a new student record to the college ERP</p>
+        </div>
+        <button onclick="closeModal('addStudentModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <form id="addStudentForm" class="mt-4 space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Roll Number *</label>
+            <input type="text" name="rollNo" required placeholder="e.g. 22CS106" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500 font-mono">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
+            <input type="text" name="name" required placeholder="e.g. Priya Sundaram" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Department *</label>
+            <select name="department" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+              <option value="CSE">Computer Science (CSE)</option>
+              <option value="AI&DS">AI & Data Science (AI&DS)</option>
+              <option value="IT">Information Tech (IT)</option>
+              <option value="ECE">Electronics (ECE)</option>
+              <option value="MECH">Mechanical (MECH)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Year of Study *</label>
+            <select name="year" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year" selected>3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Semester</label>
+            <input type="text" name="semester" value="5th Sem" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Section</label>
+            <input type="text" name="section" value="A" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">CGPA</label>
+            <input type="number" step="0.01" min="0" max="10" name="cgpa" value="8.50" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Attendance %</label>
+            <input type="number" min="0" max="100" name="attendance" value="85" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Fee Status</label>
+            <select name="feeStatus" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+              <option value="Paid">Paid</option>
+              <option value="Pending">Pending</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Official Email *</label>
+          <input type="email" name="email" required placeholder="student@apexinstitute.edu.in" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Phone Number</label>
+          <input type="tel" name="phone" placeholder="+91 98765 43210" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeModal('addStudentModal')" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-sm shadow-blue-500/20">Save & Enroll</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. VIEW STUDENT DOSSIER MODAL -->
+  <div id="viewStudentModal" class="modal fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl modal-content">
+      <div id="viewStudentModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 2B. EDIT STUDENT MODAL -->
+  <div id="editStudentModal" class="modal fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl modal-content max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Edit Student Record</h3>
+          <p class="text-xs text-slate-400">Update academic details, attendance and fee records</p>
+        </div>
+        <button onclick="closeModal('editStudentModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+      <div id="editStudentModalBody" class="mt-4">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. DIGITAL ID CARD MODAL -->
+  <div id="digitalIdModal" class="modal fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl modal-content">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+        <h3 class="text-sm font-bold text-slate-900">Digital Student ID Card</h3>
+        <button onclick="closeModal('digitalIdModal')" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <div id="digitalIdCardContent">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <div class="flex justify-end gap-2 mt-4 pt-3 border-t border-slate-100">
+        <button onclick="closeModal('digitalIdModal')" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50">Close</button>
+        <button onclick="window.print()" class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 inline-flex items-center gap-1.5">
+          <i class="fa-solid fa-print"></i> Print ID Card
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. OFFICIAL FEE RECEIPT MODAL (PRINT READY) -->
+  <div id="feeReceiptModal" class="modal fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl modal-content my-8">
+      <div id="feeReceiptModalBody">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ADD NOTICE MODAL -->
+  <div id="addNoticeModal" class="modal fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl modal-content">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Publish Campus Circular</h3>
+          <p class="text-xs text-slate-400">Broadcast official notification to college portals</p>
+        </div>
+        <button onclick="closeModal('addNoticeModal')" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <form id="addNoticeForm" class="mt-4 space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Circular Title *</label>
+          <input type="text" name="title" required placeholder="e.g. End Semester Practical Examination Timetable" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Category *</label>
+            <select name="category" required class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+              <option value="Examination">Examination</option>
+              <option value="Academic">Academic</option>
+              <option value="Event">Event / Hackathon</option>
+              <option value="Finance">Finance & Dues</option>
+              <option value="General">General / Holiday</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1">Target Audience *</label>
+            <input type="text" name="target" value="All Engineering Students" class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">Notice Content / Details *</label>
+          <textarea name="content" rows="4" required placeholder="Write the complete circular details..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:border-blue-500"></textarea>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="isPinnedCheck" name="isPinned" class="rounded text-blue-600 focus:ring-blue-500">
+          <label for="isPinnedCheck" class="text-xs font-semibold text-slate-700 cursor-pointer">Pin to top of Notice Board</label>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeModal('addNoticeModal')" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50">Cancel</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-sm shadow-blue-500/20">Publish Circular</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. ONLINE FEE PAYMENT SIMULATOR MODAL -->
+  <div id="paymentModal" class="modal fixed inset-0 z-50 hidden items-center justify-center modal-backdrop p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl modal-content">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <i class="fa-solid fa-shield-halved text-sm"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Apex Secure Payment Gateway</h3>
+            <p class="text-[10px] text-slate-400">256-Bit SSL Encrypted Campus Gateway</p>
+          </div>
+        </div>
+        <button onclick="closeModal('paymentModal')" class="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <div class="my-4 p-4 rounded-2xl bg-slate-50 border border-slate-100">
+        <div class="text-xs text-slate-500">Payable Dues for 5th Semester</div>
+        <div class="text-2xl font-black text-slate-900 mt-1">₹45,000 <span class="text-xs font-normal text-slate-400">INR</span></div>
+        <div class="text-[11px] text-slate-500 mt-1">Student: <strong>Aarav Sharma (22CS101)</strong></div>
+      </div>
+
+      <div class="space-y-2.5">
+        <label class="block text-xs font-bold text-slate-700">Select Payment Method</label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" class="p-2.5 rounded-xl border-2 border-blue-600 bg-blue-50/50 text-center text-xs font-bold text-blue-700">
+            <i class="fa-solid fa-qrcode text-base block mb-1"></i> UPI / QR
+          </button>
+          <button type="button" class="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-center text-xs font-medium text-slate-700">
+            <i class="fa-regular fa-credit-card text-base block mb-1"></i> Card
+          </button>
+          <button type="button" class="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-center text-xs font-medium text-slate-700">
+            <i class="fa-solid fa-building-columns text-base block mb-1"></i> NetBanking
+          </button>
+        </div>
+
+        <div class="p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-center my-3">
+          <i class="fa-solid fa-qrcode text-4xl text-slate-800"></i>
+          <p class="text-[11px] font-mono text-slate-600 mt-1 font-bold">UPI ID: apexinstitute@icici</p>
+          <p class="text-[10px] text-slate-400">Scan using GPay, PhonePe or Paytm</p>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-slate-100">
+        <button id="confirmPayBtn" onclick="processSimulatedPayment()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm shadow-emerald-500/20">
+          <i class="fa-solid fa-lock mr-2"></i> Pay ₹45,000 via Secure Gateway
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+  <div id="toast-container"></div>
+
+  <!-- ================= APPLICATION SCRIPTS ================= -->
+  <script src="js/data.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
