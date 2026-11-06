@@ -62,6 +62,9 @@ class AcademiaERPRequestHandler(BaseHTTPRequestHandler):
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, Authorization')
 
+    def do_HEAD(self):
+        self.do_GET()
+
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_cors_headers()
@@ -330,7 +333,7 @@ class AcademiaERPRequestHandler(BaseHTTPRequestHandler):
             # 5. Reset Database
             if path == '/api/reset':
                 from init_db import init_database
-                init_database()
+                init_database(reset=True)
                 return self.send_json({"success": True, "message": "Database reset to defaults"})
 
             return self.send_json({"error": "Unknown POST route"}, 404)
@@ -421,7 +424,10 @@ class AcademiaERPRequestHandler(BaseHTTPRequestHandler):
         rel_path = path.lstrip('/')
         full_path = os.path.normpath(os.path.join(BASE_DIR, rel_path))
 
-        if not full_path.startswith(BASE_DIR) or not os.path.exists(full_path) or os.path.isdir(full_path):
+        top = rel_path.split('/')[0]
+        allowed = (rel_path == 'index.html') or top in ('css', 'js')
+        if (not allowed or not full_path.startswith(BASE_DIR + os.sep)
+                or not os.path.exists(full_path) or os.path.isdir(full_path)):
             self.send_response(404)
             self.send_header('Content-Type', 'text/html; charset=utf-8')
             self.end_headers()
@@ -455,10 +461,10 @@ class AcademiaERPRequestHandler(BaseHTTPRequestHandler):
             self.wfile.write(str(e).encode('utf-8'))
 
 def run_server():
-if not os.path.exists(DB_PATH):
-    print('[*] Database not found on startup. Initializing database...')
-    from init_db import init_database
-    init_database()
+    if not os.path.exists(DB_PATH):
+        print('[*] Database not found on startup. Initializing database...')
+        from init_db import init_database
+        init_database()
 
     server_address = ('0.0.0.0', PORT)
     httpd = ThreadingHTTPServer(server_address, AcademiaERPRequestHandler)
